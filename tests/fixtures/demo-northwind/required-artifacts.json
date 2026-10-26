@@ -1,0 +1,7 @@
+{
+  "read_by": "jd-analyst (demo run)",
+  "items": [
+    {"artifact": "application question", "question_id": "q1", "channel": "job_board"},
+    {"artifact": "application question", "question_id": "q2", "channel": "job_board"}
+  ]
+}

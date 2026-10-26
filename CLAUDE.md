@@ -61,6 +61,37 @@ user and let them choose what to pursue.
 Run independent agents in parallel when nothing links them (for example, several
 questions in one application). Keep sequential steps sequential.
 
+## The application engine
+
+Every application runs through `engine/apply.py`, which owns the order of the
+steps above. You do not decide the next step or whether a step is done: the
+engine tells you the step, and a check program decides whether it passed.
+
+```
+python engine/apply.py start resume-data/output/<slug> --company "X" --role "Y"
+python engine/apply.py next  resume-data/output/<slug>       # the step, its rules, its check
+python engine/apply.py complete resume-data/output/<slug> <node> --evidence "..."
+```
+
+The nodes, in order: `jd_capture`, `required_artifacts`, `eligibility`,
+`channels`, `briefs`, `draft`, `repetition`, `ground`, `verify`, `resume`,
+`evidence_pack`, `external_review`, `assemble`, `ready`. Each one's rules and
+check are in `engine/process-graph.json`; read them with `next`, not from memory.
+
+- **A failed check blocks the node.** Read `apply.py why`, repair the work, record
+  `apply.py fix <folder> <node> --diagnosis "..." --action "..."`, then complete
+  again. A retry without a recorded fix is refused. After three failures on one
+  node, log the mistake in `resume-data/resume-qa-ledger.md` before a fourth try.
+- **A skipped application is a normal outcome.** End it with
+  `apply.py abort <folder> --reason "..."`.
+- **`ready` is the last node.** It writes `READY-FOR-YOU.md` and the engine stops.
+  There is no submit or send step, and the hooks in `.claude/settings.json` deny
+  email sends and clicks on application submit controls whatever the engine says.
+- To quote the career bank in any review prompt, generate the lines with
+  `python engine/ceiling_quote.py` instead of typing them.
+- In demo mode, run the engine on `resume-data/output/demo-<slug>/`; folders named
+  `demo-*` read `examples/sample-career-bank.md` automatically.
+
 ## Hard rules
 
 - **No invented facts.** Every claim about the candidate's history must trace to
@@ -87,3 +118,6 @@ questions in one application). Keep sequential steps sequential.
 | `resume-data/salary-thresholds.md` | Break-even, real-hike and walk-away pay |
 | `resume-data/job-search/` | Shortlists and skipped roles with reasons |
 | `resume-data/output/<slug>/` | One folder per application: posting, analysis, resume, answers, reviews |
+| `resume-data/banned-terms.txt` | Optional. Patterns no rendered resume may contain (tools you never used, retired figures) |
+| `engine/` | The application engine: `apply.py`, `process-graph.json`, the check programs, `ground.py`, `ceiling_quote.py` |
+| `tests/selftest.py` | Runs the demo application through the engine and every refusal |

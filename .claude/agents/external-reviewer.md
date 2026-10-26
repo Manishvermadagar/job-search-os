@@ -21,4 +21,7 @@ to paste it into ChatGPT.
 Apply a returned fix only after checking candidate-history facts against
 `career-bank.md` and employer or posting facts against their verified sources.
 Record each rejected fix and why. Loop until READY TO SUBMIT. Save every round
-to `resume-data/output/<slug>/review/`.
+to `resume-data/output/<slug>/review/review-round-<n>.md`, naming each reviewed
+file (`answers/<id>.md`, the resume PDF) followed by its own verdict line; the
+engine reads the latest round's verdict per file. If the review is not run, write
+`external-review-skipped.md` with a `REASON:` line so the skip is a recorded decision.

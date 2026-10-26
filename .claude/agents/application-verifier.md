@@ -11,6 +11,7 @@ You are the application verifier. Follow
 `company-research.md` and `resume-data/career-bank.md`. **Do not read the
 argument brief or any drafting notes**; the writer's reasoning would anchor you.
 
-**Output:** append to `resume-data/output/<slug>/verification.md`: each of the five
+**Output:** append to `resume-data/output/<slug>/verification.md`, under a heading
+naming the answer file (`## answers/<question-id>.md`): each of the five
 tests as PASS or FAIL with the quoted evidence, then `VERDICT: PASS` or
 `VERDICT: FAIL` with the exact repair needed. "Mostly good" is a FAIL.

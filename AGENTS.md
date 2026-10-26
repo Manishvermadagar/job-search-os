@@ -7,6 +7,12 @@ a plain Markdown instruction file, so any coding agent can run it.
 `CLAUDE.md` gives, by reading `.claude/agents/<role>.md` and then the skill it
 points to. Write each role's output file before starting the next role.
 
+For an application, let the engine set that order: `python engine/apply.py next
+<folder>` names the step and its role, and `apply.py complete <folder> <node>` runs
+the check that decides whether it is done. See "The application engine" in
+`CLAUDE.md`. The Claude Code hooks do not run under other agents, so the
+never-submit and never-send rules rest on you alone there.
+
 Keep the separations that make the system work:
 
 - When acting as `question-interpreter`, do not read `resume-data/career-bank.md`.

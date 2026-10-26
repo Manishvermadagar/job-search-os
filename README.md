@@ -34,6 +34,8 @@ Find jobs:     job-selector ─▶ SHORTLIST.md ─▶ you choose
 Apply:         jd-analyst ─▶ resume-builder ─▶ resume-reviewer
                └─ per question: interpreter ─▶ strategist ─▶ writer ─▶ verifier
                ─▶ (external-reviewer) ─▶ you review and submit
+
+Every application step is sequenced and checked by engine/apply.py.
 ```
 
 ## Requirements
@@ -66,6 +68,37 @@ After setup, ask for what you want:
 - "Build me a resume for operations manager roles."
 - "Scan this job board and shortlist what fits: <url>"
 - "Prepare my application for this posting: <url>"
+
+## The application engine
+
+An application is not left to the agents' memory of the process. `engine/apply.py`
+owns the sequence: it hands out one step at a time, and a small check program, not
+the agent, decides whether each step is done.
+
+```bash
+python engine/apply.py start resume-data/output/<slug> --company "X" --role "Y"
+python engine/apply.py next resume-data/output/<slug>
+python engine/apply.py complete resume-data/output/<slug> <step> --evidence "..."
+```
+
+The 14 steps run from capturing the posting to `ready`. Among the things the checks
+refuse:
+
+- a step completed out of order, or retried without saying what was fixed
+- a sentence the career bank does not support, or a figure that appears in no
+  source, unless you record where it comes from or cut it
+- an answer the verifier has not passed by name, or one edited after it passed
+- a resume edited after its review, or a PDF older than its source
+- an email channel with no resume attached, or a channel missing something the
+  posting asked for
+- an answer reused word for word from another application
+
+The last step writes `READY-FOR-YOU.md`: what to submit, where, and which files.
+Then the engine stops. Two Claude Code hooks back this up: any tool call that
+would send an email or click an application's submit control is denied.
+
+Run `python tests/selftest.py` to see every one of these refusals happen on the
+demo application.
 
 ## Using it with Codex or another agent
 

@@ -1,0 +1,23 @@
+{
+  "job_board": {
+    "status": "INTENDED",
+    "evidence": "Demo: the fictional posting's own apply page, which asks the two questions.",
+    "submit_at": "the fictional posting's apply page (demo - nothing to submit)",
+    "contains": {
+      "answers": ["answers/q1.md", "answers/q2.md"],
+      "resume": "DEMO Operations Manager_Avery Example.pdf",
+      "posting_artifacts": [
+        {"artifact": "application question", "question_id": "q1"},
+        {"artifact": "application question", "question_id": "q2"}
+      ]
+    }
+  },
+  "careers_page": {
+    "status": "NOT_AVAILABLE",
+    "evidence": "Demo: Northwind is fictional, so there is no careers page to check."
+  },
+  "email": {
+    "status": "NOT_AVAILABLE",
+    "evidence": "The posting publishes no email address. Guessed addresses are never used."
+  }
+}

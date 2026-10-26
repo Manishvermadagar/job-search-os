@@ -1,0 +1,196 @@
+{
+  "version": "1.0",
+  "about": "The application engine's process. Nodes come from what a finished application must CONTAIN, not from a list of past mistakes. Each node names the check that decides whether it is done. The last node is 'ready': the engine never submits and never sends.",
+  "nodes": [
+    {
+      "id": "jd_capture",
+      "label": "Capture the posting verbatim",
+      "agent": "jd-analyst",
+      "checks": [
+        "checks/jd_capture.py"
+      ],
+      "rules": [
+        "Save the posting VERBATIM to jd-posting.txt, plus listing metadata that is not in the body: compensation, location, hiring region, visa or relocation lines, the apply-to route.",
+        "Read the BODY for a country or work-authorization line. A job board's structured field can say 'anywhere' while the body says otherwise. The body wins.",
+        "Write jd-analysis.md in the same step: requirements marked MET / PARTIAL / GAP against the career bank."
+      ]
+    },
+    {
+      "id": "required_artifacts",
+      "label": "List what the POSTING demands an application include",
+      "agent": "jd-analyst",
+      "checks": [
+        "checks/required_artifacts.py"
+      ],
+      "rules": [
+        "Write required-artifacts.json: {\"read_by\": \"<who read the posting for this>\", \"items\": [...]}. Each item names an artifact (cover letter, portfolio link, a specific question, a work sample) and optionally the channel it belongs to.",
+        "Postings bury hard requirements in the last paragraph ('applications without a cover letter will not be considered'). Read to the end.",
+        "An empty list is a valid answer, but it must be an explicit empty list, not a missing file."
+      ]
+    },
+    {
+      "id": "eligibility",
+      "label": "Proceed or skip, with every bar quoted",
+      "agent": "job-selector",
+      "checks": [
+        "checks/eligibility.py"
+      ],
+      "rules": [
+        "Write eligibility.md ending in 'VERDICT: PROCEED' or 'VERDICT: SKIP', and a 'COMPENSATION:' line of CLEARS, BELOW or UNKNOWN taken from resume-data/salary-thresholds.md. Never guess a figure.",
+        "Reject only on a factual bar: a stated country or work-authorization requirement, a capability the career bank's ceilings rule out, or pay below the walk-away threshold.",
+        "Years of experience is never a bar on its own. Timezone and working hours are never a bar.",
+        "Every rejection quotes the posting line that caused it. A rejection with no quote is an assumption.",
+        "On SKIP, end the run with 'apply.py abort' and record the reason in resume-data/job-search/. A skipped application is a normal outcome."
+      ]
+    },
+    {
+      "id": "channels",
+      "label": "Find every channel and decide each one",
+      "agent": "orchestrator",
+      "checks": [
+        "checks/channels.py"
+      ],
+      "rules": [
+        "Write channels.json. One entry per channel you checked (job board, the company's careers page, a published email address). Status is INTENDED, NOT_AVAILABLE or DEFERRED, and every entry says what was checked in 'evidence'.",
+        "A channel you did not pursue is NOT_AVAILABLE with what you looked at, or DEFERRED with a reason. A blank entry fails: silence is how single-channel applications happen by accident.",
+        "Each INTENDED channel lists in 'contains': 'answers' (paths to answer, cover letter or cover email files), 'resume', optional 'attachments', and 'posting_artifacts' (what it includes from required-artifacts.json).",
+        "Do not guess email addresses (careers@, jobs@). Use only an address the employer publishes. If none exists, the channel is NOT_AVAILABLE."
+      ]
+    },
+    {
+      "id": "briefs",
+      "label": "Question brief, argument brief and company research for every answer",
+      "agent": "question-interpreter, application-strategist",
+      "checks": [
+        "checks/briefs.py"
+      ],
+      "rules": [
+        "For each answer file answers/<id>.md: briefs/<id>-question-brief.md (question-interpreter, written blind to the career bank) and briefs/<id>-argument-brief.md (application-strategist).",
+        "The argument brief records 3-5 angles and which were REJECTED, with why. A brief with one angle means the first idea was taken.",
+        "company-research.md exists before any answer makes a claim about the employer."
+      ]
+    },
+    {
+      "id": "draft",
+      "label": "Write every answer an intended channel needs",
+      "agent": "application-writer",
+      "checks": [
+        "checks/draft.py"
+      ],
+      "rules": [
+        "Writing order per answer: interpreter, strategist, writer. The writer may improve the route but not the evidence boundary.",
+        "An anchor must be something that would become false if a competitor said it. A fact about the industry is not an anchor however well sourced.",
+        "Respect stated word limits. Never volunteer a weakness that was not asked about."
+      ]
+    },
+    {
+      "id": "repetition",
+      "label": "No answer reheated from another application",
+      "agent": "orchestrator",
+      "checks": [
+        "checks/repetition.py"
+      ],
+      "rules": [
+        "Compares each answer against the answers of every other application folder that reached 'ready'.",
+        "Reused evidence is not automatically wrong, because your best material is finite. A shared run of six or more words means the answer itself was reused.",
+        "Change the evidence or the angle, not the wording. Rewording a reused answer keeps it reused."
+      ]
+    },
+    {
+      "id": "ground",
+      "label": "Every claim traced; every unsupported sentence answered",
+      "agent": "orchestrator",
+      "checks": [
+        "checks/grounding.py"
+      ],
+      "rules": [
+        "This RUNS the grounder over every answer. It never accepts a hand-written grounding file.",
+        "Every UNSUPPORTED sentence needs a disposition in grounding/<id>.json: \"SOURCE:career-bank.md:<line>\", \"RHETORICAL\" or \"CUT\" (and then actually cut it).",
+        "'In my experience' or 'what I have found' in front of a generalisation makes it sound sourced without sourcing it. Find the career-bank line or cut the claim.",
+        "A figure must appear literally in a source. Topical overlap is not support for a number.",
+        "Watch scope: a true fact about one team restated about 'the whole operation' is the most common defect. The grounder flags it when a figure or absence claim is attached; it cannot see the figureless case.",
+        "REVIEW sentences do not block, but they are listed for the verifier: weak support is where invented detail hides."
+      ]
+    },
+    {
+      "id": "verify",
+      "label": "application-verifier passes every answer, by name",
+      "agent": "application-verifier",
+      "checks": [
+        "checks/grounding.py",
+        "checks/verifications.py"
+      ],
+      "rules": [
+        "The verifier reads only the final answer, the question, jd-posting.txt, company-research.md and the career bank. Never the briefs.",
+        "verification.md names each answer file in a heading ('## answers/<id>.md') and ends that section with 'VERDICT: PASS' or 'VERDICT: FAIL'. The LAST verdict for a file is the one that counts.",
+        "A verdict written before the answer last changed does not count: re-verify after every repair.",
+        "This node re-runs the grounder on the current text first, so a repaired answer cannot pass on an earlier grounding."
+      ]
+    },
+    {
+      "id": "resume",
+      "label": "Tailored resume reviewed and rendered",
+      "agent": "resume-builder, resume-reviewer",
+      "checks": [
+        "checks/resume.py"
+      ],
+      "rules": [
+        "resume.md in the folder, reviewed in review.md ending 'VERDICT: READY', with the review newer than resume.md.",
+        "Render only after the review passes. A render older than resume.md is stale: re-render it.",
+        "Rendered files are checked by EXTRACTED text against resume-data/banned-terms.txt, because the PDF is what an employer reads, not the markdown."
+      ]
+    },
+    {
+      "id": "evidence_pack",
+      "label": "Everything a reviewer needs is present and hashed",
+      "agent": "orchestrator",
+      "checks": [
+        "checks/evidence_pack.py"
+      ],
+      "rules": [
+        "A reviewer can only review what it is given: every answer, the resume, the career bank, the posting and company-research.md must exist and are hashed into evidence-pack.json.",
+        "Attach the real files to any reviewer. Never hand it a summary of the career bank.",
+        "A file that changed after it was reviewed is a new draft. The later checks compare against these hashes."
+      ]
+    },
+    {
+      "id": "external_review",
+      "label": "Optional second opinion, or a recorded decision to skip it",
+      "agent": "external-reviewer",
+      "checks": [
+        "checks/external_review.py"
+      ],
+      "rules": [
+        "Either review/review-round-<n>.md names each answer and the resume PDF and ends 'VERDICT: READY TO SUBMIT', or external-review-skipped.md gives a 'REASON:' line. Skipping is allowed; skipping silently is not.",
+        "A review older than the file it reviews does not count.",
+        "Apply a reviewer's fix only after checking it against the career bank. Record every rejected fix and why. A reviewer cannot see your corrections, so a fact it asks you to restore may be one you removed on purpose."
+      ]
+    },
+    {
+      "id": "assemble",
+      "label": "Composition: each channel carries answers, resume and every required artifact",
+      "agent": "orchestrator",
+      "checks": [
+        "checks/composition.py",
+        "checks/banned_evidence.py"
+      ],
+      "rules": [
+        "An application is incomplete unless the recipient can, from what they receive alone, see who is applying, read why, and get everything the posting asked for.",
+        "An email channel needs a resume in its attachments. A board or careers-page channel needs the resume it will upload recorded in 'resume'.",
+        "Evidence the argument brief banned for this application (banned-evidence.txt) must not appear in any answer or in the tailored resume."
+      ]
+    },
+    {
+      "id": "ready",
+      "label": "Ready for you to submit",
+      "agent": "orchestrator",
+      "checks": [
+        "checks/ready.py"
+      ],
+      "rules": [
+        "Writes READY-FOR-YOU.md: per channel, what to submit, where, and which files.",
+        "THE ENGINE STOPS HERE. It never submits an application and never sends an email. Show the user the application. The user submits it."
+      ]
+    }
+  ]
+}
