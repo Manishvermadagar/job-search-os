@@ -1,0 +1,23 @@
+Operations Manager — Northwind Software (Remote)
+
+Fictional employer note for this demo: Northwind Software makes Compass,
+a support-queue product that shows team leads where routing delays begin.
+Northwind says its design priority is helping leads correct queue problems
+before customers need to follow up.
+
+We are looking for an Operations Manager to run our 10-person customer support team.
+
+Responsibilities
+- Own support KPIs: first response time, resolution time, CSAT
+- Hire, train and coach support agents
+- Design and improve support processes and tooling
+- Report weekly to the Head of Customer Experience
+
+Requirements
+- 3+ years in customer support, 1+ year leading a team
+- Experience with a helpdesk tool (Zendesk, Freshdesk or similar)
+- Strong written English
+
+Application questions
+1. Why do you want to work at Northwind? (150 words)
+2. Describe a process you improved and the result. (200 words)

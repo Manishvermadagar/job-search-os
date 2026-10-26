@@ -1,0 +1,14 @@
+# Your personal data stays on your machine.
+resume-data/*
+!resume-data/profiles/
+!resume-data/job-search/
+!resume-data/output/
+resume-data/profiles/*
+resume-data/job-search/*
+resume-data/output/*
+!resume-data/**/.gitkeep
+
+.env
+*.env
+__pycache__/
+.DS_Store
